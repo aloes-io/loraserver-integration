@@ -1,0 +1,36 @@
+{
+  "name": "LoraOrganization",
+  "base": "PersistedModel",
+  "plural": "LoraOrganizations",
+  "resourceName": "organizations",
+  "properties": {
+    "organization": {
+      "id": {
+        "type": "string",
+        "id": true
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "canHaveGateways": {
+        "type": "boolean",
+        "required": true,
+        "default": true
+      },
+      "displayName": {
+        "type": "string",
+        "required": true,
+        "default": null
+      }
+    }
+  },
+  "relations": {
+    "users": {
+      "type": "hasMany",
+      "model": "LoraUser",
+      "foreignKey": "userID"
+    }
+  }
+}

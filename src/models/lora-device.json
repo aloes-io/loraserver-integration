@@ -1,0 +1,69 @@
+{
+  "name": "LoraDevice",
+  "base": "PersistedModel",
+  "plural": "LoraDevices",
+  "resourceName": "devices",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "device": {
+      "name": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "devEUI": {
+        "type": "string",
+        "required": false,
+        "default": null,
+        "unique": true
+      },
+      "applicationID": {
+        "type": "string",
+        "required": false,
+        "default": null
+      },
+      "deviceProfileID": {
+        "type": "string",
+        "required": false,
+        "default": null
+      },
+      "devAddr": {
+        "type": "string",
+        "required": false,
+        "default": null
+      },
+      "description": {
+        "type": "string",
+        "required": false
+      },
+      "referenceAltitude": {
+        "type": "number",
+        "required": false,
+        "default": 0
+      },
+      "skipFCntCheck": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      }
+    }
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

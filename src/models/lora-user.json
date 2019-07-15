@@ -1,0 +1,39 @@
+{
+  "name": "LoraUser",
+  "plural": "LoraUsers",
+  "base": "PersistedModel",
+  "resourceName": "users",
+  "properties": {
+    "id": {
+      "type": "string",
+      "id": true
+    },
+    "username": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "string",
+      "required": false
+    },
+    "note": {
+      "type": "string",
+      "required": false
+    },
+    "sessionTTL": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "isAdmin": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "isActive": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  }
+}

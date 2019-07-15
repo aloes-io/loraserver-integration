@@ -1,0 +1,143 @@
+{
+  "name": "ServiceProfile",
+  "base": "PersistedModel",
+  "plural": "ServiceProfiles",
+  "resourceName": "service-profiles",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "serviceProfile": {
+      "id": {
+        "type": "string",
+        "id": true
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "addGWMetaData": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "channelMask": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "devStatusReqFreq": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "dlBucketSize": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "dlRate": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "dlRatePolicy": {
+        "type": "string",
+        "required": true,
+        "default": "DROP"
+      },
+      "drMax": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "drMin": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "hrAllowed": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "minGWDiversity": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "nwkGeoLoc": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "prAllowed": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "raAllowed": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "reportDevStatusBattery": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "reportDevStatusMargin": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "targetPER": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "ulBucketSize": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "ulRate": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "ulRatePolicy": {
+        "type": "string",
+        "required": true,
+        "default": "DROP"
+      },
+      "networkServerID": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "organizationID": {
+        "type": "string",
+        "required": true,
+        "default": null
+      }
+    }
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

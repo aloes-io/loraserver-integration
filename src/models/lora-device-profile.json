@@ -1,0 +1,142 @@
+{
+  "name": "LoraDeviceProfile",
+  "base": "PersistedModel",
+  "plural": "LoraDeviceProfiles",
+  "resourceName": "device-profiles",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "deviceProfile": {
+      "classBTimeout": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "classCTimeout": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "factoryPresetFreqs": {
+        "type": "array",
+        "required": true,
+        "default": [0]
+      },
+      "id": {
+        "type": "string",
+        "id": true
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "macVersion": {
+        "type": "string",
+        "required": false
+      },
+      "maxDutyCycle": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "maxEIRP": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "networkServerID": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "organizationID": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "pingSlotDR": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "pingSlotFreq": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "pingSlotPeriod": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "regParamsRevision": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "rfRegion": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "rxDROffset1": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "rxDataRate2": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "rxDelay1": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "rxFreq2": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "supports32BitFCnt": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "supportsClassB": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "supportsClassC": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "supportsJoin": {
+        "type": "boolean",
+        "required": true,
+        "default": true
+      }
+    }
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

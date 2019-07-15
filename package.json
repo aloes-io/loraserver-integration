@@ -1,0 +1,145 @@
+{
+  "name": "loraserver-integration",
+  "version": "1.0.0",
+  "main": "server/server.js",
+  "engines": {
+    "node": ">=6"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "start": "babel-node ./src/index.js",
+    "start:dev": "cp deploy/.env_development .env && NODE_ENV=development nodemon --ignore 'log/*.*' --exec babel-node ./src/index.js",
+    "start:local": "cp deploy/.env_local .env && NODE_ENV=local nodemon  --ignore 'log/*.*' --exec babel-node ./src/index.js",
+    "start:stage": "cp deploy/.env_staging .env && NODE_ENV=staging nodemon --exec babel-node ./src/index.js",
+    "build": "npx babel src --out-dir dist --copy-files",
+    "posttest": "npm run lint && npm audit"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.4.4",
+    "aloes-light-handlers": "^1.0.3",
+    "async-mqtt": "^2.3.0",
+    "compression": "^1.0.3",
+    "cors": "^2.5.2",
+    "dotenv": "^8.0.0",
+    "helmet": "^3.10.0",
+    "lodash": "^4.17.14",
+    "loopback": "^3.26.0",
+    "loopback-boot": "^3.3.1",
+    "loopback-component-explorer": "^6.4.0",
+    "loopback-connector-rest": "^3.4.2",
+    "mqtt-pattern": "^1.2.0",
+    "oma-json": "^1.0.6",
+    "serve-favicon": "^2.0.1",
+    "strong-error-handler": "^3.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.2.2",
+    "@babel/node": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
+    "@babel/plugin-proposal-function-sent": "^7.0.0",
+    "@babel/plugin-proposal-json-strings": "^7.0.0",
+    "@babel/plugin-proposal-numeric-separator": "^7.0.0",
+    "@babel/plugin-proposal-throw-expressions": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-syntax-import-meta": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.0.0",
+    "acorn": "^6.1.0",
+    "babel-eslint": "^8.2.6",
+    "connect-history-api-fallback": "^1.5.0",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^11.3.0",
+    "eslint-config-loopback": "^8.0.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "identity-obj-proxy": "^3.0.0",
+    "jsdoc-to-markdown": "^5.0.0",
+    "light-server": "^2.6.0",
+    "nodemon": "^1.18.8",
+    "prettier": "1.16.1",
+    "vuepress": "^1.0.0-alpha.47"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "plugins": [
+      "@babel/plugin-syntax-dynamic-import",
+      "@babel/plugin-syntax-import-meta",
+      "@babel/plugin-proposal-class-properties",
+      "@babel/plugin-proposal-json-strings",
+      [
+        "@babel/plugin-proposal-decorators",
+        {
+          "legacy": true
+        }
+      ],
+      "@babel/plugin-proposal-function-sent",
+      "@babel/plugin-proposal-export-namespace-from",
+      "@babel/plugin-proposal-numeric-separator",
+      "@babel/plugin-proposal-throw-expressions",
+      "@babel/plugin-transform-runtime"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "es6": true,
+      "node": true
+    },
+    "extends": [
+      "airbnb-base",
+      "loopback",
+      "prettier"
+    ],
+    "plugins": [
+      "babel",
+      "prettier"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "parser": "babel-eslint"
+    },
+    "rules": {
+      "import/no-unresolved": "off",
+      "import/extensions": "off",
+      "import/prefer-default-export": "off",
+      "no-param-reassign": "off",
+      "one-var-declaration-per-line": "off",
+      "prettier/prettier": "error"
+    },
+    "globals": {
+      "require": true
+    }
+  },
+  "eslintIgnore": [
+    "/public/",
+    "/dist/",
+    "/deploy/",
+    "/src/initial-data/",
+    "/docs/",
+    "/logs/",
+    "/storage/",
+    "/node_modules/"
+  ],
+  "prettier": {
+    "bracketSpacing": true,
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "jsxBracketSameLine": true,
+    "trailingComma": "all"
+  },
+  "repository": {
+    "type": "",
+    "url": ""
+  },
+  "license": "UNLICENSED",
+  "description": "loraserver-integration"
+}

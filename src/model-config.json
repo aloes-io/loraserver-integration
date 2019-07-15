@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "sources": ["loopback/common/models", "loopback/server/models", "../common/models", "./models"],
+    "mixins": ["loopback/common/mixins", "loopback/server/mixins", "../common/mixins", "./mixins"]
+  },
+  "Application": {
+    "dataSource": "db",
+    "public": false
+  },
+  "Device": {
+    "dataSource": "db",
+    "public": false
+  },
+  "LoraApplication": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "LoraDevice": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "LoraDeviceProfile": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "LoraGateway": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "LoraOrganization": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "LoraUser": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "NetworkServer": {
+    "dataSource": "loraRest",
+    "public": false
+  },
+  "Sensor": {
+    "dataSource": "db",
+    "public": false
+  },
+  "ServiceProfile": {
+    "dataSource": "loraRest",
+    "public": false
+  }
+}

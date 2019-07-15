@@ -1,0 +1,80 @@
+{
+  "name": "LoraGateway",
+  "base": "PersistedModel",
+  "plural": "LoraGateways",
+  "resourceName": "gateways",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "gateway": {
+      "id": {
+        "type": "string",
+        "id": true
+      },
+      "name": {
+        "type": "string",
+        "required": false,
+        "default": null
+      },
+      "description": {
+        "type": "string",
+        "required": false
+      },
+      "boards": {
+        "type": "array",
+        "required": false,
+        "default": [
+          {
+            "fineTimestampKey": "string",
+            "fpgaID": "string"
+          }
+        ]
+      },
+      "discoveryEnabled": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "gatewayProfileID": {
+        "type": "string",
+        "required": false
+      },
+      "location": {
+        "type": "object",
+        "required": false,
+        "default": {
+          "accuracy": 0,
+          "altitude": 0,
+          "latitude": 0,
+          "longitude": 0,
+          "source": "UNKNOWN"
+        }
+      },
+      "networkServerID": {
+        "type": "string",
+        "required": false
+      },
+      "organizationID": {
+        "type": "string",
+        "required": false
+      }
+    }
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

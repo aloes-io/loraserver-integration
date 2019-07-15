@@ -1,0 +1,128 @@
+{
+  "name": "Device",
+  "base": "PersistedModel",
+  "plural": "Devices",
+  "resourceName": "Devices",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "id": {
+      "type": "string",
+      "id": true
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "default": null
+    },
+    "type": {
+      "type": "string",
+      "required": true,
+      "default": null
+    },
+    "status": {
+      "type": "boolean",
+      "default": false
+    },
+    "devEui": {
+      "type": "string",
+      "required": true,
+      "default": null,
+      "unique": true
+    },
+    "devAddr": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "apiKey": {
+      "type": "string",
+      "required": false
+    },
+    "clientKey": {
+      "type": "string",
+      "required": false
+    },
+    "description": {
+      "type": "string",
+      "required": false
+    },
+    "icons": {
+      "type": "array",
+      "required": false,
+      "default": [],
+      "description": "urls pointing to icon image"
+    },
+    "accessPointUrl": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "frameCounter": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "lastSignal": {
+      "type": "date",
+      "required": false
+    },
+    "qrCode": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "authMode": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "transportProtocol": {
+      "type": "string",
+      "required": true,
+      "default": null
+    },
+    "transportProtocolVersion": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "messageProtocol": {
+      "type": "string",
+      "required": true,
+      "default": null
+    },
+    "messageProtocolVersion": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "applications": {
+      "type": "array",
+      "required": false,
+      "default": []
+    },
+    "collaborators": {
+      "type": "array",
+      "required": false,
+      "default": []
+    }
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

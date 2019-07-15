@@ -1,0 +1,68 @@
+{
+  "name": "LoraApplication",
+  "base": "PersistedModel",
+  "plural": "LoraApplications",
+  "resourceName": "applications",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "application": {
+      "id": {
+        "type": "string",
+        "id": true
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "description": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "payloadCodec": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "payloadDecoderScript": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "payloadEncoderScript": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "organizationID": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "serviceProfileID": {
+        "type": "string",
+        "required": true,
+        "default": null
+      }
+    }
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

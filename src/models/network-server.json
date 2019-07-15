@@ -1,0 +1,88 @@
+{
+  "name": "NetworkServer",
+  "base": "PersistedModel",
+  "plural": "NetworkServers",
+  "resourceName": "network-servers",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {},
+  "properties": {
+    "networkServer": {
+      "id": {
+        "type": "string",
+        "id": true
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "default": null
+      },
+      "gatewayDiscoveryDR": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "gatewayDiscoveryEnabled": {
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "gatewayDiscoveryInterval": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "gatewayDiscoveryTXFrequency": {
+        "type": "number",
+        "required": true,
+        "default": 0
+      },
+      "caCert": {
+        "type": "string",
+        "required": false
+      },
+      "routingProfileCACert": {
+        "type": "string",
+        "required": false
+      },
+      "routingProfileTLSCert": {
+        "type": "string",
+        "required": false
+      },
+      "routingProfileTLSKey": {
+        "type": "string",
+        "required": false
+      },
+      "tlsCert": {
+        "type": "string",
+        "required": false
+      },
+      "tlsKey": {
+        "type": "string",
+        "required": false
+      },
+      "server": {
+        "type": "string",
+        "required": false
+      }
+    },
+    "region": "string",
+    "version": "string"
+  },
+  "indexes": {},
+  "protected": [],
+  "hidden": [],
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}
