@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
-//  import loraProtocol from '../initial-data/lora-app-protocol';
+import mqttPattern from 'mqtt-pattern';
+import loraProtocol from '../initial-data/lora-app-protocol';
 
 /**
  * @module LoraGateway
@@ -21,11 +22,11 @@ module.exports = function(LoraGateway) {
   LoraGateway.disableRemoteMethodByName('exists');
   LoraGateway.disableRemoteMethodByName('upsert');
   LoraGateway.disableRemoteMethodByName('replaceOrCreate');
-  //  LoraGateway.disableRemoteMethodByName('prototype.updateAttributes');
-  //  LoraGateway.disableRemoteMethodByName('prototype.patchAttributes');
+  LoraGateway.disableRemoteMethodByName('prototype.updateAttributes');
+  LoraGateway.disableRemoteMethodByName('prototype.patchAttributes');
   LoraGateway.disableRemoteMethodByName('createChangeStream');
 
-  LoraGateway.on('dataSourceAttached', () => {
+  LoraGateway.once('ready:lora-rest', LoraRest => {
     LoraGateway.findById = async gatewayMac => {
       try {
         if (!gatewayMac) {
@@ -55,7 +56,7 @@ module.exports = function(LoraGateway) {
      */
     const destroyById = async id =>
       new Promise((resolve, reject) => {
-        LoraGateway.app.datasources.loraRest.connector.destroy(collectionName, id, (err, res) =>
+        LoraRest.connector.destroy(collectionName, id, (err, res) =>
           err ? reject(err) : resolve(res),
         );
       });
@@ -79,7 +80,7 @@ module.exports = function(LoraGateway) {
      */
     const save = async instance =>
       new Promise((resolve, reject) => {
-        LoraGateway.app.datasources.loraRest.connector.save(collectionName, instance, (err, res) =>
+        LoraRest.connector.save(collectionName, instance, (err, res) =>
           err ? reject(err) : resolve(res.gateway),
         );
       });
@@ -174,41 +175,59 @@ module.exports = function(LoraGateway) {
     };
   });
 
-  LoraGateway.on('publish', async message => {
-    try {
-      const payload = JSON.parse(message.payload);
-      const topic = message.topic;
-      const params = message.params;
-      if (!topic || !payload || !params || !params.method) throw new Error('Invalid message');
-      // if method === post create new device on aloes
-      switch (params.method) {
-        case 'rx':
-          //  console.log(`${collectionName} - received:rx `, payload);
-          // gateway = payload.rxInfo
-          break;
-        case 'tx':
-          // gateway = payload.txInfo
-          break;
-        case 'stats':
-          // gateway = payload
-          break;
-        case 'ack':
-          // gateway = payload
-          break;
-        case 'config':
-          // gateway = payload
-          break;
-        case 'error':
-          console.log(`${collectionName} - received:err `, payload);
-          break;
-        default:
-          throw new Error('Wrong method');
+  LoraGateway.once('ready:lora-client', LoraClient => {
+    LoraGateway.publish = async (loraGateway, payload) => {
+      try {
+        const params = {
+          method: 'tx',
+          collection: 'gateway',
+          instanceId: loraGateway.id,
+        };
+        const topic = await mqttPattern.fill(loraProtocol.pattern, params);
+        console.log(`${collectionName} - publish : `, topic, payload);
+        await LoraClient.publish(topic, JSON.stringify(payload), { qos: 0 });
+        return { topic, payload };
+      } catch (error) {
+        return error;
       }
-      //  const devEui = payload
-      // if (payload valid) AloesDevice.emit("message")
-      return message;
-    } catch (error) {
-      return error;
-    }
+    };
+
+    LoraGateway.on('publish', async message => {
+      try {
+        const payload = JSON.parse(message.payload);
+        const topic = message.topic;
+        const params = message.params;
+        if (!topic || !payload || !params || !params.method) throw new Error('Invalid message');
+        // if method === post create new device on aloes
+        switch (params.method) {
+          case 'rx':
+            //  console.log(`${collectionName} - received:rx `, payload);
+            // gateway = payload.rxInfo
+            break;
+          case 'tx':
+            // gateway = payload.txInfo
+            break;
+          case 'stats':
+            // gateway = payload
+            break;
+          case 'ack':
+            // gateway = payload
+            break;
+          case 'config':
+            // gateway = payload
+            break;
+          case 'error':
+            console.log(`${collectionName} - received:err `, payload);
+            break;
+          default:
+            throw new Error('Wrong method');
+        }
+        //  const devEui = payload
+        // if (payload valid) AloesDevice.emit("message")
+        return message;
+      } catch (error) {
+        return error;
+      }
+    });
   });
 };

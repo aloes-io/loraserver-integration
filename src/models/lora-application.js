@@ -1,11 +1,8 @@
 /* eslint-disable no-param-reassign */
 import fs from 'fs';
 import util from 'util';
-import { startCase } from 'lodash';
-import { aloesLightDecoder } from 'aloes-light-handlers';
-import { omaObjects } from 'oma-json';
-
-//  import loraProtocol from '../initial-data/lora-app-protocol';
+import mqttPattern from 'mqtt-pattern';
+import loraProtocol from '../initial-data/lora-app-protocol';
 
 /**
  * @module LoraApplication
@@ -24,13 +21,12 @@ module.exports = function(LoraApplication) {
   //  LoraApplication.disableRemoteMethodByName('prototype.patchAttributes');
   LoraApplication.disableRemoteMethodByName('createChangeStream');
 
-  LoraApplication.on('dataSourceAttached', () => {
+  //  LoraApplication.once('dataSourceAttached', () => {
+  LoraApplication.once('ready:lora-rest', LoraRest => {
     const find = async applicationId =>
       new Promise((resolve, reject) => {
-        LoraApplication.app.datasources.loraRest.connector.find(
-          collectionName,
-          applicationId,
-          (err, res) => (err ? reject(err) : resolve(res.application)),
+        LoraRest.connector.find(collectionName, applicationId, (err, res) =>
+          err ? reject(err) : resolve(res.application),
         );
       });
 
@@ -50,10 +46,8 @@ module.exports = function(LoraApplication) {
 
     const save = async instance =>
       new Promise((resolve, reject) => {
-        LoraApplication.app.datasources.loraRest.connector.save(
-          collectionName,
-          instance,
-          (err, res) => (err ? reject(err) : resolve(res.deviceProfile)),
+        LoraRest.connector.save(collectionName, instance, (err, res) =>
+          err ? reject(err) : resolve(res.deviceProfile),
         );
       });
 
@@ -98,7 +92,7 @@ module.exports = function(LoraApplication) {
 
     const destroyById = async id =>
       new Promise((resolve, reject) => {
-        LoraApplication.app.datasources.loraRest.connector.destroy(collectionName, id, (err, res) =>
+        LoraRest.connector.destroy(collectionName, id, (err, res) =>
           err ? reject(err) : resolve(res),
         );
       });
@@ -194,108 +188,21 @@ module.exports = function(LoraApplication) {
         return error;
       }
     };
+  });
 
-    const parseCayennePayload = async (loraDevice, aloesDevice) => {
+  LoraApplication.once('ready:lora-client', LoraClient => {
+    LoraApplication.publish = async (loraDevice, payload) => {
       try {
-        const Sensor = LoraApplication.app.models.Sensor;
-
-        const sensorTypes = Object.keys(loraDevice.object);
-        console.log('parseCayennePayload : ', sensorTypes);
-
-        const promises = await sensorTypes.map(async type => {
-          try {
-            const omaObjectName = startCase(type);
-            console.log('omaObjectName : ', omaObjectName);
-            const sensorIds = Object.keys(loraDevice.object[type]);
-            const updateSensors = await sensorIds.map(async id => {
-              try {
-                //  { transportProtocol: { regexp: new RegExp(`.*${aloesDevice.transportProtocol}.*`, 'i') } }
-                //  { messageProtocol: { regexp: new RegExp(`.*${aloesDevice.messageProtocol}.*`, 'i') } }
-                //  { messageProtocol: { regexp: new RegExp(`.*${device.applicationName}.*`, 'i') } }
-                const filter = {
-                  where: {
-                    and: [
-                      { nativeSensorId: id },
-                      { name: { regexp: new RegExp(`.*${omaObjectName}.*`, 'i') } },
-                      { devEui: { regexp: new RegExp(`.*${aloesDevice.devEui}.*`, 'i') } },
-                    ],
-                  },
-                };
-                // console.log('filter', filter.where.and);
-
-                let aloesSensor = await Sensor.findOne(filter);
-                const omaObject = omaObjects.find(obj => obj.name === omaObjectName);
-                const omaResourceId = omaObject.resourceIds.split(',')[0].toString();
-                const value = loraDevice.object[type][id];
-                console.log('aloesSensor : ', value, omaObject.value, omaResourceId, aloesSensor);
-
-                if (!aloesSensor || aloesSensor === null) {
-                  const params = {
-                    method: '0',
-                    sensorId: id,
-                    prefixedDevEui: `${aloesDevice.devEui}-out`,
-                    omaObjectId: omaObject.value.toString(),
-                    omaResourceId,
-                  };
-                  aloesSensor = aloesLightDecoder({ payload: value }, params);
-                  aloesSensor.method = 'HEAD';
-                  aloesSensor.resources[omaResourceId] = value;
-                  aloesSensor.transportProtocol = aloesDevice.transportProtocol;
-                  aloesSensor.transportProtocolVersion = aloesDevice.transportProtocolVersion;
-                  aloesSensor.messageProtocol = aloesDevice.messageProtocol;
-                  aloesSensor.messageProtocolVersion = aloesDevice.messageProtocolVersion;
-                  await Sensor.publish(aloesSensor, 'HEAD');
-                } else {
-                  // todo detect presentation messages
-                  // const params = {
-                  //   method: '1',
-                  //   sensorId: id,
-                  //   prefixedDevEui: `${aloesDevice.devEui}-out`,
-                  //   omaObjectId: aloesSensor.type.toString(),
-                  //   omaResourceId,
-                  // };
-                  aloesSensor.value = value.toString();
-                  aloesSensor.resource = omaResourceId;
-                  aloesSensor.resources[omaResourceId] = value;
-                  aloesSensor.method = 'PUT';
-                  // console.log('aloesSensor : ', aloesSensor);
-                  await Sensor.publish(aloesSensor, 'PUT');
-                }
-
-                return aloesSensor;
-              } catch (error) {
-                return error;
-              }
-            });
-            const result = await Promise.all(updateSensors);
-            return result;
-          } catch (error) {
-            return error;
-          }
-        });
-        const result = await Promise.all(promises);
-        return result;
-      } catch (error) {
-        return error;
-      }
-    };
-
-    const parsePayload = async device => {
-      try {
-        const Device = LoraApplication.app.models.Device;
-        const aloesDevice = await Device.findOne({
-          where: { devEui: { regexp: new RegExp(`.*${device.devEUI}.*`, 'i') } },
-        });
-        //  console.log('aloesDevice : ', aloesDevice);
-        if (!aloesDevice || aloesDevice === null) throw new Error('No aloes device found');
-        if (!device.object) throw new Error('Lora payload not decoded, add a handler');
-        if (device.applicationName.search(/cayenne/i) !== -1) {
-          await parseCayennePayload(device, aloesDevice);
-        }
-        aloesDevice.frameCounter = device.fCnt;
-        aloesDevice.status = true;
-        await Device.publish(aloesDevice, 'PUT');
-        return aloesDevice;
+        const params = {
+          method: 'tx',
+          collection: 'application',
+          instanceId: loraDevice.applicationID,
+          devEui: loraDevice.devEUI,
+        };
+        const topic = await mqttPattern.fill(loraProtocol.devicePattern, params);
+        console.log(`${collectionName} - publish : `, topic, payload);
+        await LoraClient.publish(topic, JSON.stringify(payload), { qos: 0 });
+        return { topic, payload };
       } catch (error) {
         return error;
       }
@@ -311,6 +218,7 @@ module.exports = function(LoraApplication) {
         if (!aloesDevice || aloesDevice === null) throw new Error('No aloes device found');
         aloesDevice.status = true;
         aloesDevice.frameCounter = 0;
+        aloesDevice.lastSignal = new Date();
         await Device.publish(aloesDevice, 'HEAD');
         return aloesDevice;
       } catch (error) {
@@ -320,6 +228,8 @@ module.exports = function(LoraApplication) {
 
     LoraApplication.on('publish', async message => {
       try {
+        //  const Device = LoraApplication.app.models.Device;
+        const Sensor = LoraApplication.app.models.Sensor;
         const loraDevice = JSON.parse(message.payload);
         const topic = message.topic;
         const params = message.params;
@@ -332,9 +242,7 @@ module.exports = function(LoraApplication) {
             await parseJoin(loraDevice);
             break;
           case 'rx':
-            await parsePayload(loraDevice);
-            break;
-          case 'tx':
+            await Sensor.loraToAloes(loraDevice);
             break;
           case 'status':
             break;

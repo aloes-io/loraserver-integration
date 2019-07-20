@@ -31,6 +31,18 @@ export default async function connectToLoraServer(app) {
       return null;
     });
 
+    app.on('ready:aloes-client', AloesClient => {
+      app.models.Application.emit('ready:aloes-client', AloesClient);
+      app.models.Device.emit('ready:aloes-client', AloesClient);
+      return app.models.Sensor.emit('ready:aloes-client', AloesClient);
+    });
+
+    app.on('ready:lora-client', LoraClient => {
+      app.models.LoraDevice.emit('ready:lora-client', LoraClient);
+      app.models.LoraGateway.emit('ready:lora-client', LoraClient);
+      return app.models.LoraApplication.emit('ready:lora-client', LoraClient);
+    });
+
     app.on('error:aloes-client', async err => {
       console.log('aloes-client:err', err);
       return null;
@@ -61,7 +73,7 @@ export default async function connectToLoraServer(app) {
         const loraRest = await app.loopback.createDataSource(loraRestConfig);
         app.datasources.loraRest = loraRest;
         // console.log('loraServer', loraServer.settings.options.headers);
-        return app.emit('connected:lora-server', loraRest);
+        return app.emit('connected:lora-server', loraRest, loraServer);
       } catch (error) {
         return error;
       }
@@ -71,7 +83,7 @@ export default async function connectToLoraServer(app) {
       //  const token = process.env.LORA_HTTP_TOKEN;
       const loraRest = await app.loopback.createDataSource(loraRestConfig);
       app.datasources.loraRest = loraRest;
-      app.emit('connected:lora-server', loraRest);
+      app.emit('connected:lora-server', loraRest, loraServer);
     } else {
       let failCounts = 1;
       const tryAgain = setInterval(async () => {

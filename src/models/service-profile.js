@@ -8,13 +8,11 @@
 module.exports = function(ServiceProfile) {
   const collectionName = 'ServiceProfile';
 
-  ServiceProfile.on('dataSourceAttached', () => {
+  ServiceProfile.once('ready:lora-rest', LoraRest => {
     const save = async instance =>
       new Promise((resolve, reject) => {
-        ServiceProfile.app.datasources.loraRest.connector.save(
-          collectionName,
-          instance,
-          (err, res) => (err ? reject(err) : resolve(res.serviceProfile)),
+        LoraRest.connector.save(collectionName, instance, (err, res) =>
+          err ? reject(err) : resolve(res.serviceProfile),
         );
       });
 

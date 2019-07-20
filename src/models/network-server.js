@@ -8,13 +8,11 @@
 module.exports = function(NetworkServer) {
   const collectionName = 'NetworkServer';
 
-  NetworkServer.on('dataSourceAttached', () => {
+  NetworkServer.once('ready:lora-rest', LoraRest => {
     const save = async instance =>
       new Promise((resolve, reject) => {
-        NetworkServer.app.datasources.loraRest.connector.save(
-          collectionName,
-          instance,
-          (err, res) => (err ? reject(err) : resolve(res.networkServer)),
+        LoraRest.connector.save(collectionName, instance, (err, res) =>
+          err ? reject(err) : resolve(res.networkServer),
         );
       });
 

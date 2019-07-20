@@ -1,8 +1,8 @@
 export default async function initLoraServerConfig(app) {
   try {
-    app.once('connected:lora-server', async loraRest => {
+    app.once('connected:lora-server', async (LoraRest, LoraServer) => {
       try {
-        //  console.log('connectToLoraServer:res', loraRest.settings);
+        //  console.log('connectToLoraServer:res', LoraRest.settings);
         const loraAppModels = [
           'LoraApplication',
           'LoraDevice',
@@ -13,35 +13,28 @@ export default async function initLoraServerConfig(app) {
           'NetworkServer',
           'ServiceProfile',
         ];
-        const configuredModels = await loraAppModels.map(async modelName =>
-          app.loopback.configureModel(app.models[modelName], {
-            dataSource: loraRest,
-          }),
-        );
+        const configuredModels = await loraAppModels.map(async modelName => {
+          try {
+            await app.loopback.configureModel(app.models[modelName], {
+              dataSource: LoraRest,
+            });
+            return app.models[modelName].emit('ready:lora-rest', LoraRest, LoraServer);
+          } catch (error) {
+            return error;
+          }
+        });
         await Promise.all(configuredModels);
 
-        //  const loraRestConnector = loraRest.connector;
-        // loraRestConnector.observe('before execute', (ctx, next) => {
+        //  const LoraRestConnector = LoraRest.connector;
+        // LoraRestConnector.observe('before execute', (ctx, next) => {
         //   console.log(' lora API:before execute', ctx.req);
         //   return next();
-        // });
-
-        // loraRestConnector.observe('after execute', function(ctx, next) {
-        //   console.log(' lora API:after execute', ctx.res.body);
-        //   // if (ctx.req.method === 'POST') {
-        //   //   ctx.res.body.location = ctx.res.headers.location;
-        //   //   return ctx.end(null, ctx, ctx.res.body);
-        //   // } else {
-        //   //   return next();
-        //   // }
-        //   next();
         // });
 
         //  check organisations
         const organization = await app.models.LoraOrganization.compose();
         process.env.LORA_ORGANIZATION_ID = organization.id;
 
-        //
         //  check if user is in this organisation
         const users = await app.models.LoraUser.find({
           limit: 1,
@@ -56,12 +49,11 @@ export default async function initLoraServerConfig(app) {
         console.log('LoraUser:res', user);
         await app.models.LoraOrganization.findOrCreateUser(organization.id, user);
 
-        //
         // check network-servers
         const networkServer = await app.models.NetworkServer.compose();
         process.env.LORA_NETWORK_SERVER_ID = networkServer.id;
 
-        // // check service-profiles
+        // check service-profiles
         //  const serviceProfileID = process.env.LORA_SERVICE_PROFILE_ID;
         const serviceProfile = await app.models.ServiceProfile.compose(
           organization.id,
@@ -89,8 +81,7 @@ export default async function initLoraServerConfig(app) {
           networkServerId: networkServer.id,
           serviceProfileId: serviceProfile.id,
         };
-        app.emit('ready:lora-server', loraConf);
-        return loraConf;
+        return app.emit('ready:lora-server', loraConf);
       } catch (error) {
         return error;
       }

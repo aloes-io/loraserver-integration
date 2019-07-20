@@ -9,9 +9,9 @@ export default async function setAloesClient(app) {
     const mqttOptions = {
       protocolId: 'MQTT',
       protocolVersion: 4,
-      reconnectPeriod: 1000,
+      reconnectPeriod: 5000,
       connectTimeout: 30 * 1000,
-      clean: false,
+      clean: true,
       clientId: `${applicationId}-${Math.random()
         .toString(16)
         .substr(2, 8)}`,
@@ -29,10 +29,10 @@ export default async function setAloesClient(app) {
       try {
         //  console.log('parseAloesAppMessage:req', topic, payload.toString());
         let params = null;
-        if (mqttPattern.matches(aloesProtocol.collectionPattern, topic)) {
-          params = mqttPattern.exec(aloesProtocol.collectionPattern, topic);
-        } else if (mqttPattern.matches(aloesProtocol.instancePattern, topic)) {
-          params = mqttPattern.exec(aloesProtocol.instancePattern, topic);
+        if (mqttPattern.matches(aloesProtocol.collectionPatternIn, topic)) {
+          params = mqttPattern.exec(aloesProtocol.collectionPatternIn, topic);
+        } else if (mqttPattern.matches(aloesProtocol.instancePatternIn, topic)) {
+          params = mqttPattern.exec(aloesProtocol.instancePatternIn, topic);
         }
         if (!params || params === null) {
           throw new Error('Error: Invalid pattern');
@@ -44,7 +44,7 @@ export default async function setAloesClient(app) {
         );
 
         payload = payload.toString();
-        //  console.log('parseAloesAppMessage:res', params);
+        console.log('parseAloesAppMessage:res', params);
 
         if (methodExists && collectionExists) {
           let Model;
@@ -138,7 +138,7 @@ export default async function setAloesClient(app) {
             console.log('aloesClient connected');
             app.aloesClient = aloesClient;
             await aloesClient.subscribe(`${applicationId}/#`, { qos: 1 });
-            return app.emit('ready:aloes-client', application, loraConf, state);
+            return app.emit('ready:aloes-client', aloesClient, application, state);
           } catch (error) {
             console.log('error', error);
             return error;

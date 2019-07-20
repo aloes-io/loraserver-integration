@@ -1,6 +1,4 @@
 /* eslint-disable no-param-reassign */
-import mqttPattern from 'mqtt-pattern';
-import loraProtocol from '../initial-data/lora-app-protocol';
 
 /**
  * @module LoraDevice
@@ -24,40 +22,17 @@ module.exports = function(LoraDevice) {
   //  LoraDevice.disableRemoteMethodByName('prototype.patchAttributes');
   LoraDevice.disableRemoteMethodByName('createChangeStream');
 
-  LoraDevice.on('dataSourceAttached', () => {
-    LoraDevice.publish = async device => {
-      try {
-        console.log(`${collectionName} - message : `, device);
-        if (LoraDevice.app.loraClient) {
-          const params = {
-            method: 'tx',
-            collection: 'application',
-            instanceId: '',
-            devEui: device.devEui,
-          };
-          const topic = await mqttPattern.fill(loraProtocol.devicePattern, params);
-          console.log('LORA TOPIC : ', topic);
-          // await LoraDevice.app.loraClient.publish(loraTopic, payload, { qos: 0 });
-          // return { topic, payload };
-        }
-        return null;
-      } catch (error) {
-        return error;
-      }
-    };
-
+  LoraDevice.once('ready:lora-rest', (LoraRest, LoraServer) => {
     LoraDevice.findById = async deviceDevEui => {
       try {
         if (!deviceDevEui || deviceDevEui === null) {
           return null;
         }
-
         let device;
         const devices = await LoraDevice.find({
           limit: 1,
           search: deviceDevEui,
         });
-
         if (!devices || devices.totalCount === 0) {
           device = null;
         } else {
@@ -77,7 +52,7 @@ module.exports = function(LoraDevice) {
      */
     const save = async instance =>
       new Promise((resolve, reject) => {
-        LoraDevice.app.datasources.loraRest.connector.save(collectionName, instance, (err, res) =>
+        LoraRest.connector.save(collectionName, instance, (err, res) =>
           err ? reject(err) : resolve(res),
         );
       });
@@ -129,7 +104,7 @@ module.exports = function(LoraDevice) {
      */
     const destroyById = async id =>
       new Promise((resolve, reject) => {
-        LoraDevice.app.datasources.loraRest.connector.destroy(collectionName, id, (err, res) =>
+        LoraRest.connector.destroy(collectionName, id, (err, res) =>
           err ? reject(err) : resolve(res),
         );
       });
@@ -148,7 +123,7 @@ module.exports = function(LoraDevice) {
     const getKeys = async deviceDevEui => {
       const token = process.env.LORA_HTTP_TOKEN;
       return new Promise((resolve, reject) => {
-        LoraDevice.app.datasources.loraServer.getDeviceKeys(token, deviceDevEui, (err, res) =>
+        LoraServer.getDeviceKeys(token, deviceDevEui, (err, res) =>
           err ? reject(err) : resolve(res.deviceKeys),
         );
       });
@@ -167,16 +142,15 @@ module.exports = function(LoraDevice) {
       }
     };
 
-    LoraDevice.createKeys = async (deviceDevEui, keys, macVersion) => {
+    LoraDevice.createKeys = async (deviceDevEui, keys) => {
       try {
         // if (macVersion === "")keys.nwkKey
         console.log(`${collectionName}-createKeys:req`, keys);
         if (!keys || !keys.deviceKeys || !keys.deviceKeys.nwkKey || !keys.deviceKeys.devEUI) {
           return null;
         }
-        const loraServer = LoraDevice.app.datasources.loraServer;
         const token = process.env.LORA_HTTP_TOKEN;
-        const deviceKeys = await loraServer.createDeviceKeys(token, deviceDevEui, keys);
+        const deviceKeys = await LoraServer.createDeviceKeys(token, deviceDevEui, keys);
         console.log(`${collectionName}-createKeys:res`, deviceKeys);
         return deviceKeys;
       } catch (error) {
@@ -188,9 +162,8 @@ module.exports = function(LoraDevice) {
     LoraDevice.updateKeys = async (deviceDevEui, keys) => {
       try {
         if (!keys || !keys.appKey || !keys.devEUI || !keys.nwkKey) return null;
-        const loraServer = LoraDevice.app.datasources.loraServer;
         const token = process.env.LORA_HTTP_TOKEN;
-        await loraServer.updateDeviceKeys(token, deviceDevEui, keys);
+        await LoraServer.updateDeviceKeys(token, deviceDevEui, keys);
         console.log(`${collectionName}-updateKeys:res`, keys);
         return keys;
       } catch (error) {
@@ -202,7 +175,7 @@ module.exports = function(LoraDevice) {
     const getActivation = async deviceDevEui => {
       const token = process.env.LORA_HTTP_TOKEN;
       return new Promise((resolve, reject) => {
-        LoraDevice.app.datasources.loraServer.getDeviceActivation(token, deviceDevEui, (err, res) =>
+        LoraServer.getDeviceActivation(token, deviceDevEui, (err, res) =>
           err ? reject(err) : resolve(res.deviceActivation),
         );
       });
@@ -223,11 +196,8 @@ module.exports = function(LoraDevice) {
     const activate = async (deviceDevEui, deviceActivation) => {
       const token = process.env.LORA_HTTP_TOKEN;
       return new Promise((resolve, reject) => {
-        LoraDevice.app.datasources.loraServer.activateDevice(
-          token,
-          deviceDevEui,
-          deviceActivation,
-          (err, res) => (err ? reject(err) : resolve(res)),
+        LoraServer.activateDevice(token, deviceDevEui, deviceActivation, (err, res) =>
+          err ? reject(err) : resolve(res),
         );
       });
     };
@@ -290,11 +260,26 @@ module.exports = function(LoraDevice) {
           }
           device = await LoraDevice.findById(result.device);
         } else {
-          device.name = aloesDevice.name;
-          device.description = description;
-          device.deviceProfileID = deviceProfile.id;
-          device.deviceProfileName = deviceProfile.name;
-          device = await LoraDevice.updateById(device.devEUI, { device });
+          let hasChanged = false;
+          if (device.name !== aloesDevice.name) {
+            hasChanged = true;
+            device.name = aloesDevice.name;
+          }
+          if (device.description !== description) {
+            hasChanged = true;
+            device.description = description;
+          }
+          if (device.deviceProfileID !== deviceProfile.id) {
+            hasChanged = true;
+            device.deviceProfileID = deviceProfile.id;
+          }
+          if (device.deviceProfileName !== deviceProfile.name) {
+            hasChanged = true;
+            device.deviceProfileName = deviceProfile.name;
+          }
+          if (hasChanged) {
+            device = await LoraDevice.updateById(device.devEUI, { device });
+          }
         }
 
         // check keys

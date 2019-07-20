@@ -7,9 +7,9 @@ export default async function setLoraClient(app) {
     const mqttOptions = {
       protocolId: 'MQTT',
       protocolVersion: 4,
-      reconnectPeriod: 1000,
+      reconnectPeriod: 5000,
       connectTimeout: 30 * 1000,
-      clean: false,
+      clean: true,
       clientId: `${process.env.APPLICATION_ID}-${Math.random()
         .toString(16)
         .substr(2, 8)}`,
@@ -91,18 +91,22 @@ export default async function setLoraClient(app) {
 
         payload = payload.toString();
         if (methodExists && collectionExists) {
-          return Model.emit('publish', { topic, payload, params });
+          await Model.emit('publish', { topic, payload, params });
         }
-        throw new Error('Error: Invalid pattern');
+        return null;
+        //  throw new Error('Error: Invalid pattern');
       } catch (error) {
         //  console.log('parseLoraAppMessage:err', error);
         return error;
       }
     };
 
+    // store conf ?
+    //  app.once('ready:lora-server', async loraConf => {});
+
     // on aloes-client ready  check device-profiles
     // compare with stored aloes devices
-    app.on('ready:aloes-client', async (aloesApp, loraConf) => {
+    app.once('ready:aloes-client', async (aloesClient, aloesApp) => {
       try {
         //  console.log('on:ready:aloes-client', aloesApp.name);
         console.log('on:ready:aloes-client', aloesApp.name);
@@ -128,15 +132,17 @@ export default async function setLoraClient(app) {
          */
         loraClient.on('connect', async state => {
           try {
-            console.log('loraClient connected, subscribing to : ', appList);
+            console.log('loraClient connected');
             app.loraClient = loraClient;
             if (appList && appList !== null) {
+              console.log('subscribing to : ', appList);
               const supbPromises = await appList.map(async appId =>
-                loraClient.subscribe(`application/${appId}/#`, { qos: 1 }),
+                loraClient.subscribe(`application/${appId}/#`, { qos: 0 }),
               );
               await Promise.all(supbPromises);
             }
-            return app.emit('ready:lora-client', loraConf, state);
+            //  await loraClient.subscribe(`application/#`, { qos: 0 });
+            return app.emit('ready:lora-client', loraClient, state);
           } catch (error) {
             return error;
           }
@@ -150,9 +156,15 @@ export default async function setLoraClient(app) {
         loraClient.on('offline', async state => {
           try {
             console.log('loraClient disconnected');
+            if (appList && appList !== null) {
+              console.log('unsubscribing from: ', appList);
+              const supbPromises = await appList.map(async appId =>
+                loraClient.unsubscribe(`application/${appId}/#`),
+              );
+              await Promise.all(supbPromises);
+            }
             delete app.loraClient;
-            app.emit('stopped:lora-client', state);
-            return state;
+            return app.emit('stopped:lora-client', state);
           } catch (error) {
             return error;
           }

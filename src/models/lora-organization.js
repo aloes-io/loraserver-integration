@@ -8,12 +8,11 @@
 module.exports = function(LoraOrganization) {
   const collectionName = 'LoraOrganization';
 
-  LoraOrganization.on('dataSourceAttached', () => {
+  LoraOrganization.once('ready:lora-rest', (LoraRest, LoraServer) => {
     const save = async instance =>
       new Promise((resolve, reject) => {
-        LoraOrganization.app.datasources.loraRest.connector.save(
-          (collectionName, instance),
-          (err, res) => (err ? reject(err) : resolve(res.organization)),
+        LoraRest.connector.save(collectionName, instance, (err, res) =>
+          err ? reject(err) : resolve(res.organization),
         );
       });
 
@@ -89,9 +88,8 @@ module.exports = function(LoraOrganization) {
 
     LoraOrganization.findOrCreateUser = async (organizationId, user) => {
       try {
-        const loraServer = LoraOrganization.app.datasources.loraServer;
         const token = process.env.LORA_HTTP_TOKEN;
-        const loraOrgUsers = await loraServer.getOrganizationUsers(token, organizationId, 2);
+        const loraOrgUsers = await LoraServer.getOrganizationUsers(token, organizationId, 2);
         let organizationUser;
         if (!loraOrgUsers || Number(loraOrgUsers.totalCount) === 0) {
           organizationUser = {
@@ -100,10 +98,10 @@ module.exports = function(LoraOrganization) {
             userID: user.id,
             organizationID: organizationId,
           };
-          await loraServer.createOrganizationUser(token, organizationId, {
+          await LoraServer.createOrganizationUser(token, organizationId, {
             organizationUser,
           });
-          organizationUser = await loraServer.getOrganizationUser(token, organizationId, user.id);
+          organizationUser = await LoraServer.getOrganizationUser(token, organizationId, user.id);
         } else {
           organizationUser = loraOrgUsers.result[0];
         }

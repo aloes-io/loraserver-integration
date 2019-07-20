@@ -13,11 +13,13 @@
  * @property {array}   validators.methods
  */
 const aloesProtocol = {
-  collectionPattern: '+applicationId/+collection/+method',
-  instancePattern: '+applicationId/+collection/+method/+modelId',
+  collectionPatternOut: '+applicationEui/+collection/+method',
+  instancePatternOut: '+applicationEui/+collection/+method/+modelId',
+  collectionPatternIn: '+applicationId/+collection/+method',
+  instancePatternIn: '+applicationId/+collection/+method/+modelId',
   validators: {
     modelId: 'string',
-    collections: ['Application', 'Device', 'Sensor', 'VirtualObject', 'IoTAgent'],
+    collections: ['Application', 'Device', 'Sensor', 'Measurement', 'IoTAgent'],
     methods: ['AUTH', 'HEAD', 'POST', 'GET', 'PUT', 'DELETE', 'STREAM'],
   },
 };

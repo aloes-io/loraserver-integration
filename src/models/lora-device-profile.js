@@ -169,7 +169,7 @@ module.exports = function(LoraDeviceProfile) {
             );
           } else {
             deviceProfile = await LoraDeviceProfile.findById(deviceProfile.id);
-            let hasChanged = true;
+            let hasChanged = false;
             // todo get those values from env ?
             deviceProfile.macVersion = '1.0.3';
             deviceProfile.rfRegion = 'EU868';
