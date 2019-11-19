@@ -1,4 +1,5 @@
-/* eslint-disable no-param-reassign */
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 import mqttPattern from 'mqtt-pattern';
 import loraProtocol from '../initial-data/lora-app-protocol';
 
@@ -44,7 +45,7 @@ module.exports = function(LoraGateway) {
         }
         return gateway;
       } catch (error) {
-        return error;
+        throw error;
       }
     };
 
@@ -68,7 +69,7 @@ module.exports = function(LoraGateway) {
         return gatewayMac;
       } catch (error) {
         console.log(`${collectionName}-deleteById err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -100,7 +101,7 @@ module.exports = function(LoraGateway) {
         return gateway;
       } catch (error) {
         console.log(`${collectionName}-updateById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -170,7 +171,7 @@ module.exports = function(LoraGateway) {
         return gateway;
       } catch (error) {
         console.log(`${collectionName}-compose:err`, error);
-        return error;
+        throw error;
       }
     };
   });
@@ -184,11 +185,12 @@ module.exports = function(LoraGateway) {
           instanceId: loraGateway.id,
         };
         const topic = await mqttPattern.fill(loraProtocol.pattern, params);
-        console.log(`${collectionName} - publish : `, topic, payload);
+        console.log(`${collectionName} - publish:res `, topic, payload);
         await LoraClient.publish(topic, JSON.stringify(payload), { qos: 0 });
         return { topic, payload };
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - publish:err `, error);
+        throw error;
       }
     };
 
@@ -226,7 +228,8 @@ module.exports = function(LoraGateway) {
         // if (payload valid) AloesDevice.emit("message")
         return message;
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - on publish:err `, error);
+        return null;
       }
     });
   });

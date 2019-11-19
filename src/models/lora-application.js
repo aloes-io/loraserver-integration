@@ -1,4 +1,5 @@
-/* eslint-disable no-param-reassign */
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 import fs from 'fs';
 import util from 'util';
 import mqttPattern from 'mqtt-pattern';
@@ -40,7 +41,7 @@ module.exports = function(LoraApplication) {
         return application;
       } catch (error) {
         console.log(`${collectionName}-findById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -66,7 +67,7 @@ module.exports = function(LoraApplication) {
         return application;
       } catch (error) {
         console.log(`${collectionName}-updateById err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -86,7 +87,7 @@ module.exports = function(LoraApplication) {
         return application;
       } catch (error) {
         console.log(`${collectionName}-replaceOrCreate err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -106,13 +107,12 @@ module.exports = function(LoraApplication) {
         return applicationId;
       } catch (error) {
         console.log(`${collectionName}-deleteById err`, error);
-        return error;
+        throw error;
       }
     };
 
     const compose = async (protocol, index) => {
       try {
-        const readFile = util.promisify(fs.readFile);
         const organizationID = process.env.LORA_ORGANIZATION_ID;
         const serviceProfileID = process.env.LORA_SERVICE_PROFILE_ID;
         if (!organizationID || !serviceProfileID) return null;
@@ -126,6 +126,8 @@ module.exports = function(LoraApplication) {
           payloadCodec = 'CAYENNE_LPP';
           name = protocol;
         } else if (protocol.search(/js/i) !== -1) {
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
+          const readFile = util.promisify(fs.readFile);
           payloadCodec = 'CUSTOM_JS';
           const encoder = await readFile(`${__dirname}/../initial-data/encoder-${index}.js`);
           const decoder = await readFile(`${__dirname}/../initial-data/decoder-${index}.js`);
@@ -170,7 +172,7 @@ module.exports = function(LoraApplication) {
         return application;
       } catch (error) {
         console.log(`${collectionName}-compose elem err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -185,7 +187,7 @@ module.exports = function(LoraApplication) {
         return result;
       } catch (error) {
         console.log(`${collectionName}-compose err`, error);
-        return error;
+        throw error;
       }
     };
   });
@@ -200,29 +202,35 @@ module.exports = function(LoraApplication) {
           devEui: loraDevice.devEUI,
         };
         const topic = await mqttPattern.fill(loraProtocol.devicePattern, params);
-        console.log(`${collectionName} - publish : `, topic, payload);
+        console.log(`${collectionName} - publish:res `, topic, payload);
         await LoraClient.publish(topic, JSON.stringify(payload), { qos: 0 });
         return { topic, payload };
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - publish:err `, error);
+        throw error;
       }
     };
 
     const parseJoin = async device => {
       try {
+        if (!device || !device.devEUI) {
+          throw new Error('Invalid params');
+        }
         const Device = LoraApplication.app.models.Device;
         const aloesDevice = await Device.findOne({
+          // eslint-disable-next-line security/detect-non-literal-regexp
           where: { devEui: { regexp: new RegExp(`.*${device.devEUI}.*`, 'i') } },
         });
-        //  console.log(`${collectionName} - aloesDevice : `, aloesDevice);
         if (!aloesDevice || aloesDevice === null) throw new Error('No aloes device found');
         aloesDevice.status = true;
         aloesDevice.frameCounter = 0;
         aloesDevice.lastSignal = new Date();
+        console.log(`${collectionName} - parseJoin:res `, aloesDevice);
         await Device.publish(aloesDevice, 'HEAD');
         return aloesDevice;
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - parseJoin:err `, error);
+        throw error;
       }
     };
 
@@ -244,6 +252,8 @@ module.exports = function(LoraApplication) {
           case 'rx':
             await Sensor.loraToAloes(loraDevice);
             break;
+          case 'tx':
+            break;
           case 'status':
             break;
           case 'ack':
@@ -255,7 +265,8 @@ module.exports = function(LoraApplication) {
         }
         return message;
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - on publish:err `, error);
+        return null;
       }
     });
   });

@@ -1,3 +1,5 @@
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 import mqtt from 'async-mqtt';
 import mqttPattern from 'mqtt-pattern';
 import loraProtocol from '../initial-data/lora-app-protocol';
@@ -7,8 +9,8 @@ export default async function setLoraClient(app) {
     const mqttOptions = {
       protocolId: 'MQTT',
       protocolVersion: 4,
-      reconnectPeriod: 5000,
-      connectTimeout: 30 * 1000,
+      reconnectPeriod: 1000,
+      connectTimeout: 2 * 1000,
       clean: true,
       clientId: `${process.env.APPLICATION_ID}-${Math.random()
         .toString(16)
@@ -47,18 +49,18 @@ export default async function setLoraClient(app) {
 
             return loraDevice.applicationID;
           } catch (error) {
-            return error;
+            return null;
           }
         });
-
         const loraAppIds = await Promise.all(loraDevicesPromises);
         if (loraAppIds && loraAppIds.length > 0) {
-          //  appList = loraDevices.map(device => device.applicationID);
           appList = removeDuplicateUsingFilter(loraAppIds);
         }
+        console.log('setLoraState:res', appList);
         return appList;
       } catch (error) {
-        return error;
+        console.log('setLoraState:err', error);
+        return null;
       }
     };
 
@@ -68,37 +70,33 @@ export default async function setLoraClient(app) {
      * @param {object} payload - MQTT payload
      * @fires module:Model~publish
      */
-    const parseLoraAppMessage = async (topic, payload) => {
-      try {
-        //  console.log('parseLoraAppMessage:req', topic);
-        let params = null;
-        let Model;
-        if (mqttPattern.matches(loraProtocol.pattern, topic)) {
-          params = mqttPattern.exec(loraProtocol.pattern, topic);
-          Model = app.models.LoraGateway;
-        } else if (mqttPattern.matches(loraProtocol.devicePattern, topic)) {
-          params = mqttPattern.exec(loraProtocol.devicePattern, topic);
-          Model = app.models.LoraApplication;
-        }
-        if (!params || params === null) {
-          throw new Error('Error: Invalid pattern');
-        }
-        const methodExists = loraProtocol.validators.methods.some(meth => meth === params.method);
-        const collectionExists = loraProtocol.validators.collections.some(
-          name => name === params.collection,
-        );
-        console.log('parseLoraAppMessage:res', params);
-
-        payload = payload.toString();
-        if (methodExists && collectionExists) {
-          await Model.emit('publish', { topic, payload, params });
-        }
-        return null;
-        //  throw new Error('Error: Invalid pattern');
-      } catch (error) {
-        //  console.log('parseLoraAppMessage:err', error);
-        return error;
+    const parseLoraAppMessage = (topic, payload) => {
+      //  console.log('parseLoraAppMessage:req', topic);
+      let params = null;
+      let Model;
+      if (mqttPattern.matches(loraProtocol.pattern, topic)) {
+        params = mqttPattern.exec(loraProtocol.pattern, topic);
+        Model = app.models.LoraGateway;
+      } else if (mqttPattern.matches(loraProtocol.devicePattern, topic)) {
+        params = mqttPattern.exec(loraProtocol.devicePattern, topic);
+        Model = app.models.LoraApplication;
       }
+      if (!params || params === null) {
+        console.log('parseLoraAppMessage:err', 'Invalid pattern');
+        return null;
+      }
+      const methodExists = loraProtocol.validators.methods.some(meth => meth === params.method);
+      const collectionExists = loraProtocol.validators.collections.some(
+        name => name === params.collection,
+      );
+      console.log('parseLoraAppMessage:res', params);
+
+      payload = payload.toString();
+      if (methodExists && collectionExists) {
+        return Model.emit('publish', { topic, payload, params });
+      }
+      console.log('parseLoraAppMessage:err', 'Invalid method / collection');
+      return null;
     };
 
     // store conf ?
@@ -108,15 +106,25 @@ export default async function setLoraClient(app) {
     // compare with stored aloes devices
     app.once('ready:aloes-client', async (aloesClient, aloesApp) => {
       try {
-        //  console.log('on:ready:aloes-client', aloesApp.name);
-        console.log('on:ready:aloes-client', aloesApp.name);
         const appList = await setLoraState(aloesApp);
 
         /**
          * MQTT.JS Client.
          * @module loraClient
          */
-        const loraClient = mqtt.connect(process.env.LORA_MQTT_URL, mqttOptions);
+        const loraClient = await mqtt.connectAsync(process.env.LORA_MQTT_URL, mqttOptions);
+        app.loraClient = loraClient;
+
+        if (appList && appList !== null) {
+          console.log('subscribing to : ', appList);
+          const supbPromises = await appList.map(async appId =>
+            loraClient.subscribe(`application/${appId}/#`, { qos: 0 }),
+          );
+          await Promise.all(supbPromises);
+        }
+
+        //  await loraClient.subscribe(`application/#`, { qos: 0 });
+        app.emit('ready:lora-client', loraClient, true);
 
         /**
          * @event module:loraClient~error
@@ -130,22 +138,10 @@ export default async function setLoraClient(app) {
          * @param {object} state - Connection status
          * @fires module:app~stopped:lora-client
          */
-        loraClient.on('connect', async state => {
-          try {
-            console.log('loraClient connected');
-            app.loraClient = loraClient;
-            if (appList && appList !== null) {
-              console.log('subscribing to : ', appList);
-              const supbPromises = await appList.map(async appId =>
-                loraClient.subscribe(`application/${appId}/#`, { qos: 0 }),
-              );
-              await Promise.all(supbPromises);
-            }
-            //  await loraClient.subscribe(`application/#`, { qos: 0 });
-            return app.emit('ready:lora-client', loraClient, state);
-          } catch (error) {
-            return error;
-          }
+        loraClient.on('reconnect', () => {
+          console.log('loraClient reconnecting');
+          // app.loraClient = loraClient;
+          // app.emit('ready:lora-client', loraClient, state);
         });
 
         /**
@@ -153,21 +149,17 @@ export default async function setLoraClient(app) {
          * @param {object} state - Connection status
          * @fires module:app~stopped:lora-client
          */
-        loraClient.on('offline', async state => {
-          try {
-            console.log('loraClient disconnected');
-            if (appList && appList !== null) {
-              console.log('unsubscribing from: ', appList);
-              const supbPromises = await appList.map(async appId =>
-                loraClient.unsubscribe(`application/${appId}/#`),
-              );
-              await Promise.all(supbPromises);
-            }
-            delete app.loraClient;
-            return app.emit('stopped:lora-client', state);
-          } catch (error) {
-            return error;
-          }
+        loraClient.on('offline', state => {
+          console.log('loraClient disconnected');
+          // if (appList && appList !== null) {
+          //   console.log('unsubscribing from: ', appList);
+          //   const supbPromises = await appList.map(async appId =>
+          //     loraClient.unsubscribe(`application/${appId}/#`),
+          //   );
+          //   await Promise.all(supbPromises);
+          // }
+          // if (app.loraClient) delete app.loraClient;
+          app.emit('stopped:lora-client', state);
         });
 
         /**
@@ -176,16 +168,29 @@ export default async function setLoraClient(app) {
          * @param {object} message - MQTT Payload
          * @returns {function} parseBrokerMessage
          */
-        loraClient.on('message', async (topic, payload) => parseLoraAppMessage(topic, payload));
+        // loraClient.on('message', parseLoraAppMessage);
+
+        const handleMessage = (packet, cb) => {
+          try {
+            parseLoraAppMessage(packet.topic, packet.payload);
+            cb();
+          } catch (e) {
+            cb();
+          }
+        };
+
+        loraClient.handleMessage = handleMessage;
+
         return loraClient;
       } catch (error) {
-        return error;
+        console.log('on:ready:aloes-client:err', error);
+        return null;
       }
     });
 
     return app;
   } catch (error) {
     app.emit('error:lora-client', error);
-    return error;
+    return null;
   }
 }

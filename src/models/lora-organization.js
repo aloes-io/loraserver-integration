@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* Copyright 2019 Edouard Maleix, read LICENSE */
 
 /**
  * @module LoraOrganization
@@ -31,7 +31,7 @@ module.exports = function(LoraOrganization) {
         return organization;
       } catch (error) {
         console.log(`${collectionName}-updateById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -54,7 +54,7 @@ module.exports = function(LoraOrganization) {
         return organization;
       } catch (error) {
         console.log(`${collectionName}-replaceOrCreate err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -82,7 +82,7 @@ module.exports = function(LoraOrganization) {
         return organization;
       } catch (error) {
         console.log(`${collectionName}-compose err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -109,7 +109,7 @@ module.exports = function(LoraOrganization) {
         return organizationUser;
       } catch (error) {
         console.log(`${collectionName}-findOrCreateUser err`, error);
-        return error;
+        throw error;
       }
     };
   });

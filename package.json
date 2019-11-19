@@ -1,34 +1,37 @@
 {
   "name": "loraserver-integration",
   "version": "1.0.0",
-  "main": "server/server.js",
+  "main": "src/index.js",
   "engines": {
-    "node": ">=6"
+    "node": ">=10.0.0",
+    "npm": ">=6.0.0"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "npx eslint --ext js .",
+    "clean": "rm -rf dist && mkdir dist",
+    "build": "npm run clean ; npx babel src --out-dir dist --copy-files",
     "start": "babel-node ./src/index.js",
-    "start:dev": "cp deploy/.env_development .env && NODE_ENV=development nodemon --ignore 'log/*.*' --exec babel-node ./src/index.js",
-    "start:local": "cp deploy/.env_local .env && NODE_ENV=local nodemon  --ignore 'log/*.*' --exec babel-node ./src/index.js",
-    "start:stage": "cp deploy/.env_staging .env && NODE_ENV=staging nodemon --exec babel-node ./src/index.js",
-    "build": "npx babel src --out-dir dist --copy-files",
+    "start:dev": "cp deploy/.env_development .env ; NODE_ENV=development nodemon --ignore 'log/*.*' --exec babel-node ./src/index.js",
+    "start:local": "cp deploy/.env_local .env ; npm run build ; NODE_ENV=local node ./bin/nodemon.js",
+    "start:stage": "cp deploy/.env_staging .env ; NODE_ENV=staging nodemon --exec babel-node ./src/index.js",
     "posttest": "npm run lint && npm audit"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",
-    "aloes-light-handlers": "^1.0.3",
-    "async-mqtt": "^2.3.0",
+    "aloes-light-handlers": "^1.0.7",
+    "async-mqtt": "^2.4.2",
     "cayennelpp-handlers": "^1.0.2",
     "compression": "^1.0.3",
     "cors": "^2.5.2",
     "dotenv": "^8.0.0",
-    "helmet": "^3.10.0",
+    "helmet": "^3.21.2",
     "lodash": "^4.17.14",
     "loopback": "^3.26.0",
     "loopback-boot": "^3.3.1",
     "loopback-component-explorer": "^6.4.0",
-    "loopback-connector-rest": "^3.4.2",
+    "loopback-connector-rest": "^3.6.0",
     "mqtt-pattern": "^1.2.0",
+    "nodemon": "^1.19.4",
     "oma-json": "^1.0.6",
     "serve-favicon": "^2.0.1",
     "strong-error-handler": "^3.0.0"
@@ -58,10 +61,10 @@
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.9.0",
     "eslint-plugin-prettier": "^2.6.2",
+    "eslint-plugin-security": "^1.4.0",
     "identity-obj-proxy": "^3.0.0",
     "jsdoc-to-markdown": "^5.0.0",
     "light-server": "^2.6.0",
-    "nodemon": "^1.18.8",
     "prettier": "1.16.1",
     "vuepress": "^1.0.0-alpha.47"
   },
@@ -96,11 +99,13 @@
     "extends": [
       "airbnb-base",
       "loopback",
-      "prettier"
+      "prettier",
+      "plugin:security/recommended"
     ],
     "plugins": [
       "babel",
-      "prettier"
+      "prettier",
+      "security"
     ],
     "parserOptions": {
       "ecmaVersion": 2018,
@@ -138,9 +143,13 @@
     "trailingComma": "all"
   },
   "repository": {
-    "type": "",
-    "url": ""
+    "type": "git",
+    "url": "https://framagit.org/aloes/loraserver-integration"
   },
-  "license": "UNLICENSED",
-  "description": "loraserver-integration"
+  "license": "AGPL-3.0-or-later",
+  "author": "Edouard Maleix <ed@getlarge.eu> (https://getlarge.eu)",
+  "contributors": [
+    "Edouard Maleix <ed@getlarge.eu> (https://getlarge.eu)"
+  ],
+  "description": "LoraServer integration with Aloes"
 }

@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* Copyright 2019 Edouard Maleix, read LICENSE */
 
 /**
  * @module LoraDeviceProfile
@@ -45,7 +45,7 @@ module.exports = function(LoraDeviceProfile) {
         return deviceProfile;
       } catch (error) {
         console.log(`${collectionName}-findById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -80,7 +80,7 @@ module.exports = function(LoraDeviceProfile) {
         return deviceProfile;
       } catch (error) {
         console.log(`${collectionName}-updateById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -127,7 +127,7 @@ module.exports = function(LoraDeviceProfile) {
         return deviceProfile;
       } catch (error) {
         console.log(`${collectionName}-compose elem err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -192,7 +192,7 @@ module.exports = function(LoraDeviceProfile) {
         return deviceProfile;
       } catch (error) {
         console.log(`${collectionName}-compose err`, error);
-        return error;
+        throw error;
       }
     };
   });

@@ -1,3 +1,5 @@
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 import mqttPattern from 'mqtt-pattern';
 import aloesProtocol from '../initial-data/aloes-protocol';
 
@@ -56,7 +58,8 @@ module.exports = function(Device) {
         await AloesClient.publish(topic, payload, { qos: 0 });
         return { topic, payload };
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - publish:err `, error);
+        throw error;
       }
     };
 
@@ -66,7 +69,7 @@ module.exports = function(Device) {
         const topic = message.topic;
         const params = message.params;
         if (!topic || !device || !params || !params.method) throw new Error('Invalid message');
-        console.log(`${collectionName} - received : `, params, device.name);
+        console.log(`${collectionName} - on-publish:req `, params, device.name);
         const loraDevice = await Device.app.models.LoraDevice.findById(device.devEui);
         //  console.log(' lora device ', loraDevice);
         if (!loraDevice || !loraDevice.devEUI) throw new Error('No lora device found');
@@ -94,7 +97,8 @@ module.exports = function(Device) {
         }
         return message;
       } catch (error) {
-        return error;
+        console.log(`${collectionName} - on-publish:err `, error);
+        return null;
       }
     });
   });

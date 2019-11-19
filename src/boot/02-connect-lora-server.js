@@ -1,3 +1,5 @@
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 import rest from 'loopback-connector-rest';
 
 export default async function connectToLoraServer(app) {
@@ -25,42 +27,37 @@ export default async function connectToLoraServer(app) {
       },
     };
 
-    app.on('error:lora-server', async err => {
+    app.on('error:lora-server', err => {
       // log again and emit refresh:lora-server
       console.log('lora-server:err', err);
-      return null;
     });
 
     app.on('ready:aloes-client', AloesClient => {
       app.models.Application.emit('ready:aloes-client', AloesClient);
       app.models.Device.emit('ready:aloes-client', AloesClient);
-      return app.models.Sensor.emit('ready:aloes-client', AloesClient);
+      app.models.Sensor.emit('ready:aloes-client', AloesClient);
     });
 
     app.on('ready:lora-client', LoraClient => {
       app.models.LoraDevice.emit('ready:lora-client', LoraClient);
       app.models.LoraGateway.emit('ready:lora-client', LoraClient);
-      return app.models.LoraApplication.emit('ready:lora-client', LoraClient);
+      app.models.LoraApplication.emit('ready:lora-client', LoraClient);
     });
 
-    app.on('error:aloes-client', async err => {
+    app.on('error:aloes-client', err => {
       console.log('aloes-client:err', err);
-      return null;
     });
 
-    app.on('error:lora-client', async err => {
+    app.on('error:lora-client', err => {
       console.log('lora-client:err', err);
-      return null;
     });
 
-    app.on('stopped:aloes-client', async status => {
+    app.on('stopped:aloes-client', status => {
       console.log('aloes-client:stopped', status);
-      return null;
     });
 
-    app.on('stopped:lora-client', async status => {
+    app.on('stopped:lora-client', status => {
       console.log('lora-client:stopped', status);
-      return null;
     });
 
     app.once('loggedin:lora-server', async (interval, token) => {
@@ -75,7 +72,7 @@ export default async function connectToLoraServer(app) {
         // console.log('loraServer', loraServer.settings.options.headers);
         return app.emit('connected:lora-server', loraRest, loraServer);
       } catch (error) {
-        return error;
+        throw error;
       }
     });
 
@@ -88,18 +85,18 @@ export default async function connectToLoraServer(app) {
       let failCounts = 1;
       const tryAgain = setInterval(async () => {
         try {
-          console.log('try login');
+          console.log('connectToLoraServer:req');
           const token = await loraServer.login(credentials);
           if (!token || !token.jwt) failCounts += 1;
           else {
             failCounts = 0;
             app.emit('loggedin:lora-server', tryAgain, token);
           }
-          return token;
+          // return token;
         } catch (error) {
           console.log('connectToLoraServer:err', error);
           failCounts += 1;
-          return error;
+          // return null;
         }
       }, failCounts * 1000);
     }
@@ -107,6 +104,6 @@ export default async function connectToLoraServer(app) {
     return loraServer;
   } catch (error) {
     app.emit('error:lora-server', error);
-    return error;
+    return null;
   }
 }

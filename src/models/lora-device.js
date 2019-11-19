@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* Copyright 2019 Edouard Maleix, read LICENSE */
 
 /**
  * @module LoraDevice
@@ -40,7 +40,7 @@ module.exports = function(LoraDevice) {
         }
         return device;
       } catch (error) {
-        return error;
+        throw error;
       }
     };
 
@@ -73,7 +73,7 @@ module.exports = function(LoraDevice) {
         return device;
       } catch (error) {
         console.log(`${collectionName}-updateById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -93,7 +93,7 @@ module.exports = function(LoraDevice) {
         return device;
       } catch (error) {
         console.log(`${collectionName}-replaceOrCreate err`, error);
-        return error;
+        throw error;
       }
     };
     /**
@@ -116,7 +116,7 @@ module.exports = function(LoraDevice) {
         return deviceDevEui;
       } catch (error) {
         console.log(`${collectionName}-deleteById err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -138,7 +138,7 @@ module.exports = function(LoraDevice) {
         return deviceKeys;
       } catch (error) {
         //  console.log(`${collectionName}-getKeys err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -155,7 +155,7 @@ module.exports = function(LoraDevice) {
         return deviceKeys;
       } catch (error) {
         console.log(`${collectionName}-createKeys:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -168,7 +168,7 @@ module.exports = function(LoraDevice) {
         return keys;
       } catch (error) {
         console.log(`${collectionName}-updateKeys:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -189,7 +189,7 @@ module.exports = function(LoraDevice) {
         return deviceActivation;
       } catch (error) {
         //  console.log(`${collectionName}-getActivation err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -205,6 +205,7 @@ module.exports = function(LoraDevice) {
     LoraDevice.activate = async (deviceDevEui, deviceActivation) => {
       try {
         if (
+          !deviceActivation ||
           !deviceActivation.deviceActivation ||
           !deviceActivation.deviceActivation.appSKey ||
           !deviceActivation.deviceActivation.devEUI ||
@@ -220,7 +221,7 @@ module.exports = function(LoraDevice) {
         return deviceActivation;
       } catch (error) {
         console.log(`${collectionName}-activate err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -327,7 +328,7 @@ module.exports = function(LoraDevice) {
         return device;
       } catch (error) {
         console.log(`${collectionName}-compose:err`, error);
-        return error;
+        throw error;
       }
     };
   });

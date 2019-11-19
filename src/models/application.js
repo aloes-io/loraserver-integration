@@ -1,3 +1,5 @@
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 import mqttPattern from 'mqtt-pattern';
 import aloesProtocol from '../initial-data/aloes-protocol';
 
@@ -50,7 +52,7 @@ module.exports = function(Application) {
         await AloesClient.publish(topic, payload, { qos: 0 });
         return { topic, payload };
       } catch (error) {
-        return error;
+        throw error;
       }
     };
 

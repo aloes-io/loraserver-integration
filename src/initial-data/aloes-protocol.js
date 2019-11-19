@@ -1,3 +1,5 @@
+/* Copyright 2019 Edouard Maleix, read LICENSE */
+
 /**
  * Aloes MQTT API
  * @external LoraServerAPI
@@ -19,7 +21,7 @@ const aloesProtocol = {
   instancePatternIn: '+applicationId/+collection/+method/+modelId',
   validators: {
     modelId: 'string',
-    collections: ['Application', 'Device', 'Sensor', 'Measurement', 'IoTAgent'],
+    collections: ['Application', 'Device', 'Sensor', 'Measurement', 'Schdeduler', 'IoTAgent'],
     methods: ['AUTH', 'HEAD', 'POST', 'GET', 'PUT', 'DELETE', 'STREAM'],
   },
 };

@@ -33,11 +33,6 @@
       "default": null,
       "unique": true
     },
-    "devAddr": {
-      "type": "string",
-      "required": false,
-      "default": null
-    },
     "apiKey": {
       "type": "string",
       "required": false
@@ -103,6 +98,11 @@
     "applications": {
       "type": "array",
       "required": false,
+      "default": []
+    },
+    "clients": {
+      "type": "array",
+      "description": "A list of client ids authentified as this device",
       "default": []
     },
     "collaborators": {

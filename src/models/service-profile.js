@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* Copyright 2019 Edouard Maleix, read LICENSE */
 
 /**
  * @module ServiceProfile
@@ -31,7 +31,7 @@ module.exports = function(ServiceProfile) {
         return serviceProfile;
       } catch (error) {
         console.log(`${collectionName}-updateById:err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -54,7 +54,7 @@ module.exports = function(ServiceProfile) {
         return serviceProfile;
       } catch (error) {
         console.log(`${collectionName}-replaceOrCreate err`, error);
-        return error;
+        throw error;
       }
     };
 
@@ -100,7 +100,7 @@ module.exports = function(ServiceProfile) {
         return serviceProfile;
       } catch (error) {
         console.log(`${collectionName}-compose err`, error);
-        return error;
+        throw error;
       }
     };
   });

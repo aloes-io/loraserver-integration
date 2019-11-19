@@ -12,11 +12,9 @@
 Application build upon :
 
 - [NodeJS](https://nodejs.org/en/)
+- [Device manager](https://aloes.frama.io/device-manager/)
 - [Lora Server](https://www.loraserver.io/)
 - [Loopback](https://loopback.io/doc/en/lb3/)
-- [Open Mobile Alliance](http://www.openmobilealliance.org/wp/OMNA/LwM2M/LwM2MRegistry.html)
-- [Aloes-handlers](https://www.npmjs.com/package/aloes-handlers)
-- [IoT-agent](https://www.npmjs.com/package/iot-agent)
 
 ---
 

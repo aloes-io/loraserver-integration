@@ -16,7 +16,7 @@ module.exports = {
         accept: 'application/json',
         'content-type': 'application/json',
         apikey: process.env.APPLICATION_KEY,
-        appId: process.env.APPLICATION_ID,
+        appid: process.env.APPLICATION_ID,
       },
       strictSSL: false,
     },
