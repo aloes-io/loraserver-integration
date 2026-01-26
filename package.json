@@ -25,7 +25,7 @@
     "cors": "^2.5.2",
     "dotenv": "^8.0.0",
     "helmet": "^3.21.2",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.23",
     "loopback": "^3.26.0",
     "loopback-boot": "^3.3.1",
     "loopback-component-explorer": "^6.4.0",
